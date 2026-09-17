@@ -430,7 +430,7 @@ async function checkConfig() {
     if (data.available_models && data.available_models.length > 0) {
       const currentVal = elements.modelSelect.value;
       elements.modelSelect.innerHTML = data.available_models.map((m) => `
-        <option value="${m.id}" class="bg-slate-900">${m.name}${m.default ? ' (Recommended)' : ''}</option>
+        <option value="${m.id}" class="bg-slate-900">${m.name}</option>
       `).join('');
       if (data.default_model) {
         elements.modelSelect.value = data.default_model;
