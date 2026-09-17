@@ -1,0 +1,565 @@
+/* ==========================================================================
+   ResearchMind AI - WriteMate UI Theme
+   Replicating the Tailgrids WriteMate AI Design System
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+:root {
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
+  --theme-bg-dark: #060606;
+  --theme-card-dark: #0d0d0d;
+  --theme-border-dark: rgba(255, 255, 255, 0.18);
+  --theme-border-subtle: rgba(255, 255, 255, 0.08);
+}
+
+html, body {
+  font-family: var(--font-sans);
+  background-color: #060606;
+  color: #f3f4f6;
+  scroll-behavior: smooth;
+  letter-spacing: -0.015em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6, .font-heading {
+  font-family: var(--font-heading);
+  letter-spacing: -0.032em;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+code, pre, .font-mono, [class*="font-mono"] {
+  font-family: var(--font-mono) !important;
+  font-feature-settings: 'zero', 'ss01';
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* Ambient Background Glow */
+.writemate-hero-glow {
+  background: radial-gradient(circle at 50% -10%, rgba(99, 102, 241, 0.22) 0%, rgba(139, 92, 246, 0.12) 30%, transparent 65%);
+}
+
+.writemate-radial-bg {
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.04) 0%, transparent 70%);
+}
+
+/* Wireframe Grid Blueprint Aesthetic */
+.wireframe-border {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.wireframe-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wireframe-card:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-2px);
+}
+
+/* Ticker & Marquee Animations */
+@keyframes infinite-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes scroll-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes scroll-right {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.animate-infinite-scroll {
+  display: flex;
+  width: max-content;
+  animation: infinite-scroll 35s linear infinite;
+}
+
+.animate-scroll-left {
+  display: flex;
+  width: max-content;
+  animation: scroll-left 32s linear infinite;
+}
+
+.animate-scroll-right {
+  display: flex;
+  width: max-content;
+  animation: scroll-right 32s linear infinite;
+}
+
+.animate-infinite-scroll:hover,
+.animate-scroll-left:hover,
+.animate-scroll-right:hover {
+  animation-play-state: paused;
+}
+
+.marquee-mask {
+  mask-image: linear-gradient(to right, transparent, black 128px, black calc(100% - 128px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 128px, black calc(100% - 128px), transparent);
+}
+
+/* Distinctive WriteMate Buttons */
+.btn-writemate {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+  line-height: 1.25rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-writemate-primary {
+  background-color: #ffffff;
+  color: #060606;
+}
+
+.btn-writemate-primary:hover {
+  background-color: #f1f5f9;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+.btn-writemate-ghost {
+  background-color: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.btn-writemate-ghost:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* FAQ Accordion */
+.faq-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.3s ease, padding 0.35s ease;
+  opacity: 0;
+}
+
+.faq-item.open .faq-content {
+  max-height: 300px;
+  opacity: 1;
+  padding-top: 0.75rem;
+}
+
+.faq-item.open .faq-chevron {
+  transform: rotate(180deg);
+}
+
+/* Base & Dark Mode Prose Markdown Styling */
+.prose,
+.prose-invert {
+  max-width: 100% !important;
+  color: #e2e8f0 !important;
+  font-family: var(--font-sans);
+  letter-spacing: -0.012em;
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4,
+.prose-invert h1, .prose-invert h2, .prose-invert h3, .prose-invert h4 {
+  font-family: var(--font-heading);
+  color: #ffffff !important;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.prose h1, .prose-invert h1 {
+  font-size: 1.75rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.prose h2, .prose-invert h2 {
+  font-size: 1.35rem;
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.prose h3, .prose-invert h3 {
+  font-size: 1.15rem;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.prose p, .prose-invert p {
+  color: #cbd5e1 !important;
+  line-height: 1.7;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.prose ul, .prose-invert ul {
+  color: #cbd5e1 !important;
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.prose li, .prose-invert li {
+  color: #cbd5e1 !important;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.prose strong, .prose-invert strong {
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+.prose code, .prose-invert code {
+  color: #c7d2fe !important;
+  background-color: rgba(99, 102, 241, 0.15) !important;
+  border: 1px solid rgba(99, 102, 241, 0.25) !important;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.85em;
+}
+
+.prose pre, .prose-invert pre {
+  background-color: #0a0a0a !important;
+  color: #f1f5f9 !important;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.prose pre code, .prose-invert pre code {
+  background-color: transparent !important;
+  border: none !important;
+  color: #f1f5f9 !important;
+  padding: 0;
+}
+
+.prose table, .prose-invert table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.25rem 0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.prose th, .prose td,
+.prose-invert th, .prose-invert td {
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  padding: 0.6rem 0.85rem;
+  text-align: left;
+  font-size: 0.875rem;
+  color: #cbd5e1 !important;
+}
+
+.prose th, .prose-invert th {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  font-weight: 600;
+  color: #ffffff !important;
+}
+
+.prose blockquote, .prose-invert blockquote {
+  border-left: 3px solid #818cf8 !important;
+  padding-left: 1rem;
+  color: #a1a1aa !important;
+  font-style: italic;
+  margin: 1rem 0;
+  background-color: rgba(255, 255, 255, 0.02) !important;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-radius: 0 0.375rem 0.375rem 0;
+}
+
+.prose a, .prose-invert a {
+  color: #a5b4fc !important;
+  text-decoration: underline;
+}
+
+/* KaTeX equations in Dark Mode */
+.katex {
+  color: #f1f5f9 !important;
+}
+
+/* ==========================================================================
+   Light Mode Theme Overrides
+   ========================================================================== */
+html.light-theme,
+html.light-theme body {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+html.light-theme .writemate-hero-glow {
+  background: radial-gradient(circle at 50% -10%, rgba(99, 102, 241, 0.14) 0%, rgba(139, 92, 246, 0.06) 30%, transparent 65%);
+}
+
+html.light-theme header {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light-theme .border-white\/20,
+html.light-theme .border-white\/15,
+html.light-theme .border-white\/10,
+html.light-theme .border-white\/40,
+html.light-theme .wireframe-border {
+  border-color: #e2e8f0 !important;
+}
+
+html.light-theme .divide-white\/20 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #e2e8f0 !important;
+}
+
+html.light-theme .bg-theme-dark,
+html.light-theme .bg-theme-dark-500,
+html.light-theme .bg-slate-950,
+html.light-theme .wireframe-card,
+html.light-theme .bg-white\/3,
+html.light-theme .bg-white\/5 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light-theme .wireframe-card:hover {
+  border-color: #cbd5e1 !important;
+  background-color: #f8fafc !important;
+}
+
+html.light-theme .bg-slate-900 {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+html.light-theme .text-white {
+  color: #0f172a !important;
+}
+
+html.light-theme .text-white\/90,
+html.light-theme .text-white\/80 {
+  color: #1e293b !important;
+}
+
+html.light-theme .text-white\/70,
+html.light-theme .text-white\/60 {
+  color: #475569 !important;
+}
+
+html.light-theme .text-white\/50,
+html.light-theme .text-white\/40,
+html.light-theme .text-white\/30 {
+  color: #64748b !important;
+}
+
+html.light-theme .bg-clip-text {
+  background: linear-gradient(135deg, #0f172a 0%, #475569 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+html.light-theme .text-zinc-400,
+html.light-theme .text-zinc-500 {
+  color: #64748b !important;
+}
+
+html.light-theme .text-zinc-50 {
+  color: #0f172a !important;
+}
+
+html.light-theme .bg-white\/\[0\.02\],
+html.light-theme .bg-white\/\[0\.03\],
+html.light-theme .bg-white\/5 {
+  background-color: #f8fafc !important;
+}
+
+html.light-theme footer {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+}
+
+html.light-theme .btn-writemate-primary {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+}
+
+html.light-theme .btn-writemate-primary:hover {
+  background-color: #1e293b !important;
+}
+
+html.light-theme .btn-writemate-ghost {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.light-theme .btn-writemate-ghost:hover {
+  background-color: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+}
+
+html.light-theme .ring-white\/40 {
+  --tw-ring-color: rgba(15, 23, 42, 0.2) !important;
+}
+
+html.light-theme input,
+html.light-theme select {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html.light-theme input::placeholder {
+  color: #94a3b8 !important;
+}
+
+html.light-theme select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+html.light-theme .paper-card {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light-theme .paper-card:hover {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.light-theme .paper-card.is-active-paper,
+html.light-theme .paper-card.bg-indigo-950\/50 {
+  background-color: #eef2ff !important;
+  border-color: #818cf8 !important;
+}
+
+html.light-theme .chat-bubble,
+html.light-theme #chat-thread > div > div.bg-slate-900,
+html.light-theme #chat-thread > div > div.wireframe-card {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+html.light-theme #chat-thread > div.flex-row-reverse > div.bg-slate-900,
+html.light-theme #chat-thread > div.flex-row-reverse > div.wireframe-card {
+  background-color: #eef2ff !important;
+  border-color: #c7d2fe !important;
+  color: #1e1b4b !important;
+}
+
+html.light-theme .prose,
+html.light-theme .prose-invert {
+  color: #334155 !important;
+}
+
+html.light-theme .prose h1,
+html.light-theme .prose h2,
+html.light-theme .prose h3,
+html.light-theme .prose h4,
+html.light-theme .prose-invert h1,
+html.light-theme .prose-invert h2,
+html.light-theme .prose-invert h3,
+html.light-theme .prose-invert h4 {
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light-theme .prose p,
+html.light-theme .prose li,
+html.light-theme .prose-invert p,
+html.light-theme .prose-invert li {
+  color: #334155 !important;
+}
+
+html.light-theme .prose strong,
+html.light-theme .prose-invert strong {
+  color: #0f172a !important;
+}
+
+html.light-theme .prose pre,
+html.light-theme .prose-invert pre {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #1e293b !important;
+}
+
+html.light-theme .prose code,
+html.light-theme .prose-invert code {
+  color: #4338ca !important;
+  background-color: #eef2ff !important;
+  border-color: #c7d2fe !important;
+}
+
+html.light-theme .prose pre code,
+html.light-theme .prose-invert pre code {
+  background-color: transparent !important;
+  color: #f8fafc !important;
+}
+
+html.light-theme .prose table th,
+html.light-theme .prose-invert table th {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light-theme .prose table td,
+html.light-theme .prose-invert table td {
+  border-color: #e2e8f0 !important;
+  color: #334155 !important;
+}
+
+html.light-theme .prose blockquote,
+html.light-theme .prose-invert blockquote {
+  background-color: #f8fafc !important;
+  border-left-color: #6366f1 !important;
+  color: #475569 !important;
+}
+
+html.light-theme .katex {
+  color: #0f172a !important;
+}
+
+html.light-theme #settings-modal > div {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
+}
+
+html.light-theme ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+
+html.light-theme ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

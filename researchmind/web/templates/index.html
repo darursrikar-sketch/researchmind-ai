@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResearchMind AI - Academic Research Intelligence Platform</title>
+  <!-- Preconnect and Google Fonts (Plus Jakarta Sans & JetBrains Mono) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+            heading: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Marked.js Markdown Parser -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  
+  <!-- KaTeX for Math Equations -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+  
+  <!-- Custom WriteMate CSS -->
+  <link rel="stylesheet" href="/static/css/custom.css">
+  <script>
+    // Early theme init to prevent flash
+    if (localStorage.getItem('researchmind_theme') === 'light' || new URLSearchParams(window.location.search).get('theme') === 'light') {
+      document.documentElement.classList.add('light-theme');
+      if (document.body) document.body.classList.add('light-theme');
+    }
+  </script>
+</head>
+<body class="bg-[#060606] text-slate-100 flex flex-col min-h-screen antialiased selection:bg-indigo-600 selection:text-white">
+
+  <!-- Top Navbar (WriteMate Header) -->
+  <header class="sticky top-0 z-50 transition-all duration-300 border-b border-white/20 bg-[#060606]/85 backdrop-blur-md">
+    <nav class="max-w-7xl mx-auto px-6">
+      <div class="flex items-center justify-between py-4">
+        
+        <!-- Logo -->
+        <div class="flex items-center space-x-3">
+          <a href="#hero" class="flex items-center space-x-3 group">
+            <div class="w-9 h-9 rounded-xl bg-white text-black flex items-center justify-center font-bold shadow-md group-hover:scale-105 transition">
+              <i data-lucide="brain" class="w-5 h-5 text-black"></i>
+            </div>
+            <div>
+              <span class="font-bold text-lg tracking-tight text-white group-hover:text-indigo-300 transition">ResearchMind</span>
+              <span class="ml-1.5 text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-white/10 border border-white/20 text-white/80">AI 3.5</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Navigation Links -->
+        <div class="hidden lg:block">
+          <ul class="flex space-x-8 text-sm font-medium text-white/70">
+            <li><a href="#hero" class="hover:text-white transition duration-200">Home</a></li>
+            <li><a href="#workspace" class="hover:text-white transition duration-200">Workspace</a></li>
+            <li><a href="#features" class="hover:text-white transition duration-200">What You Get</a></li>
+            <li><a href="#use-cases" class="hover:text-white transition duration-200">Use Cases</a></li>
+            <li><a href="#models" class="hover:text-white transition duration-200">Models</a></li>
+            <li><a href="#faq" class="hover:text-white transition duration-200">FAQ</a></li>
+          </ul>
+        </div>
+
+        <!-- Right Utilities & Action Buttons -->
+        <div class="flex items-center space-x-3">
+          
+          <!-- Theme Toggle (Light / Dark) -->
+          <button id="btn-theme-toggle" class="flex items-center justify-center w-9 h-9 border border-white/20 bg-white/5 hover:bg-white/10 text-white transition rounded-none" title="Toggle Light / Dark Mode">
+            <i id="theme-icon" data-lucide="sun" class="w-4 h-4 text-amber-400"></i>
+          </button>
+
+          <!-- Model Selector -->
+          <div class="hidden sm:flex items-center space-x-2 border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-mono">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-400"></i>
+            <select id="model-select" class="bg-transparent border-none focus:outline-none text-white text-xs font-mono cursor-pointer">
+              <option value="gemini-3.5-flash" class="bg-[#060606] text-white">Gemini 3.5 Flash</option>
+              <option value="gemini-3.5-flash-lite" class="bg-[#060606] text-white">Gemini 3.5 Lite</option>
+              <option value="gemini-3.6-flash" class="bg-[#060606] text-white">Gemini 3.6 Flash</option>
+              <option value="gemini-3.8-flash" class="bg-[#060606] text-white">Gemini 3.8 Flash</option>
+            </select>
+          </div>
+
+          <!-- API Settings Button -->
+          <button id="btn-settings" class="flex items-center space-x-2 px-3 py-1.5 border border-white/20 bg-white/5 hover:bg-white/10 text-xs font-mono transition text-white">
+            <span id="api-status-dot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span id="api-status-text">Gemini Ready</span>
+          </button>
+
+          <!-- Add Paper CTA Button -->
+          <button id="btn-new-paper" class="btn-writemate btn-writemate-primary px-4 py-2 font-mono text-xs uppercase tracking-wider font-semibold transition">
+            <i data-lucide="plus" class="w-3.5 h-3.5 mr-1.5"></i>
+            <span>Add Paper</span>
+          </button>
+        </div>
+
+      </div>
+    </nav>
+  </header>
+
+  <!-- =========================================================================
+       HERO SECTION (WriteMate Iconic Hero Console)
+       ========================================================================= -->
+  <section id="hero" class="border-b border-white/20 overflow-hidden relative writemate-hero-glow">
+    <div class="max-w-7xl mx-auto px-6 relative z-20">
+      <div class="border-x border-white/20 pt-12 pb-16 lg:py-24 text-center">
+        
+        <!-- Pill Badge -->
+        <div class="inline-flex items-center space-x-2 border border-white/20 bg-white/5 px-3 py-1 text-xs font-mono text-white/90 mb-6">
+          <span class="w-2 h-2 rounded-full bg-indigo-400 animate-ping"></span>
+          <span>AI-POWERED ACADEMIC RESEARCH AGENT</span>
+        </div>
+
+        <!-- Headline -->
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl -tracking-[1.5px] font-normal text-white max-w-4xl mx-auto leading-tight mb-6">
+          Analyze Better. Review Faster.<br>
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-indigo-300">
+            Understand Any Paper with AI.
+          </span>
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="text-white/80 text-base sm:text-lg max-w-2xl mx-auto mb-10 leading-relaxed font-light">
+          Your all-in-one scientific intelligence platform — extract insights, verify experimental methodology, synthesize benchmarks, and interrogate papers with mathematically grounded citations.
+        </p>
+
+        <!-- WriteMate Ingestion Console (Central Hero Box) -->
+        <div class="max-w-2xl mx-auto px-4">
+          <div class="border border-white/20 bg-white/[0.03] p-6 sm:p-8 backdrop-blur shadow-2xl relative">
+            
+            <!-- Ingestion Tabs Toggle -->
+            <div class="flex justify-center border-b border-white/20 mb-6 text-xs font-mono">
+              <button id="tab-btn-arxiv" class="px-5 py-2.5 font-medium border-b-2 border-white text-white transition flex items-center space-x-2">
+                <i data-lucide="globe" class="w-3.5 h-3.5"></i>
+                <span>arXiv URL / ID</span>
+              </button>
+              <button id="tab-btn-pdf" class="px-5 py-2.5 font-medium border-b-2 border-transparent text-white/60 hover:text-white transition flex items-center space-x-2">
+                <i data-lucide="file-up" class="w-3.5 h-3.5"></i>
+                <span>Local PDF Upload</span>
+              </button>
+            </div>
+
+            <!-- ArXiv Query Form -->
+            <div id="form-arxiv" class="space-y-4">
+              <div class="relative flex items-center">
+                <input id="input-arxiv" type="text" placeholder="Paste arXiv ID (e.g. 1706.03762 or https://arxiv.org/abs/2106.09685)..." 
+                       class="w-full bg-[#0a0a0a] border border-white/20 px-4 py-3.5 pr-32 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-white font-mono">
+                <div class="absolute right-1.5 top-1/2 -translate-y-1/2">
+                  <button id="btn-fetch-arxiv" class="btn-writemate btn-writemate-primary px-4 py-2 text-xs font-mono uppercase font-semibold">
+                    <i data-lucide="download" class="w-3.5 h-3.5 mr-1.5"></i>
+                    <span>Fetch</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- PDF Dropzone Form -->
+            <div id="form-pdf" class="space-y-4 hidden">
+              <div id="dropzone" class="border-2 border-dashed border-white/20 hover:border-white/60 p-8 cursor-pointer transition flex flex-col items-center justify-center space-y-3 bg-[#0a0a0a]/60">
+                <input type="file" id="pdf-file-input" accept=".pdf" class="hidden">
+                <i data-lucide="cloud-upload" class="w-8 h-8 text-white/70"></i>
+                <div class="text-sm text-white font-medium">Click to select PDF or drag & drop publication here</div>
+                <div class="text-xs text-white/50 font-mono">Supports multi-page research PDFs up to 64MB</div>
+              </div>
+            </div>
+
+            <!-- Ingestion Loading Indicator -->
+            <div id="ingestion-loader" class="hidden flex items-center justify-center space-x-3 text-white text-xs font-mono pt-4">
+              <i data-lucide="loader-2" class="w-4 h-4 animate-spin text-indigo-400"></i>
+              <span id="ingestion-status-text">Fetching publication & parsing vector text...</span>
+            </div>
+
+            <!-- Quick Example Chips -->
+            <div class="pt-4 border-t border-white/10 text-left">
+              <div class="text-[11px] font-mono text-white/50 mb-2">QUICK LOAD SEMINAL PAPERS:</div>
+              <div class="flex flex-wrap gap-2">
+                <button onclick="setArxivExample('1706.03762')" class="text-xs bg-white/5 hover:bg-white/10 text-white/80 hover:text-white border border-white/15 px-3 py-1 font-mono transition">
+                  Transformers (1706.03762)
+                </button>
+                <button onclick="setArxivExample('2106.09685')" class="text-xs bg-white/5 hover:bg-white/10 text-white/80 hover:text-white border border-white/15 px-3 py-1 font-mono transition">
+                  LoRA (2106.09685)
+                </button>
+                <button onclick="setArxivExample('2501.12948')" class="text-xs bg-white/5 hover:bg-white/10 text-white/80 hover:text-white border border-white/15 px-3 py-1 font-mono transition">
+                  DeepSeek-R1 (2501.12948)
+                </button>
+                <button onclick="loadSamplePaperShortcut()" class="text-xs bg-indigo-950/60 hover:bg-indigo-900/80 text-indigo-300 border border-indigo-700/60 px-3 py-1 font-mono transition flex items-center space-x-1">
+                  <i data-lucide="file-check" class="w-3 h-3"></i>
+                  <span>AI-Based Paper (Sample)</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       TRUSTED BY / VENUES TICKER (WriteMate Infinite Marquee)
+       ========================================================================= -->
+  <section class="py-12 border-b border-white/20 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex items-center justify-center space-x-4 mb-8 text-xs font-mono text-white/50 tracking-widest uppercase text-center">
+        <span class="w-3 h-[1px] bg-white/30"></span>
+        <span>Trusted for Research in Top Scientific Venues</span>
+        <span class="w-3 h-[1px] bg-white/30"></span>
+      </div>
+
+      <div class="w-full inline-flex flex-nowrap overflow-hidden marquee-mask">
+        <ul class="flex items-center justify-center space-x-12 animate-infinite-scroll text-sm font-mono text-white/70">
+          <li class="flex items-center space-x-2 border border-white/15 px-4 py-2 bg-white/5">
+            <i data-lucide="award" class="w-4 h-4 text-indigo-400"></i>
+            <span>arXiv.org</span>
+          </li>
+          <li class="flex items-center space-x-2 border border-white/15 px-4 py-2 bg-white/5">
+            <i data-lucide="network" class="w-4 h-4 text-indigo-400"></i>
+            <span>NeurIPS</span>
+          </li>
+          <li class="flex items-center space-x-2 border border-white/15 px-4 py-2 bg-white/5">
+            <i data-lucide="cpu" class="w-4 h-4 text-indigo-400"></i>
+            <span>ICML</span>
+          </li>
+          <li class="flex items-center space-x-2 border border-white/15 px-4 py-2 bg-white/5">
+            <i data-lucide="layers" class="w-4 h-4 text-indigo-400"></i>
+            <span>ICLR</span>
+          </li>
+          <li class="flex items-center space-x-2 border border-white/15 px-4 py-2 bg-white/5">
+            <i data-lucide="binary" class="w-4 h-4 text-indigo-400"></i>
+            <span>IEEE Xplore</span>
+          </li>
+          <li class="flex items-center space-x-2 border border-white/15 px-4 py-2 bg-white/5">
+            <i data-lucide="book-open" class="w-4 h-4 text-indigo-400"></i>
+            <span>Nature</span>
+          </li>
+          <li class="flex items-center space-x-2 border border-white/15 px-4 py-2 bg-white/5">
+            <i data-lucide="atom" class="w-4 h-4 text-indigo-400"></i>
+            <span>Science</span>
+          </li>
+          <li class="flex items-center space-x-2 border border-white/15 px-4 py-2 bg-white/5">
+            <i data-lucide="message-square-code" class="w-4 h-4 text-indigo-400"></i>
+            <span>ACL Anthology</span>
+          </li>
+          <li class="flex items-center space-x-2 border border-white/15 px-4 py-2 bg-white/5">
+            <i data-lucide="activity" class="w-4 h-4 text-indigo-400"></i>
+            <span>PubMed</span>
+          </li>
+        </ul>
+        <!-- Duplicate for continuous scroll loop -->
+        <ul class="flex items-center justify-center space-x-12 animate-infinite-scroll text-sm font-mono text-white/70" aria-hidden="true">
+          <li class="flex items-center space-x-2 border border-white/15 px-4 py-2 bg-white/5">
+            <i data-lucide="award" class="w-4 h-4 text-indigo-400"></i>
+            <span>arXiv.org</span>
+          </li>
+          <li class="flex items-center space-x-2 border border-white/15 px-4 py-2 bg-white/5">
+            <i data-lucide="network" class="w-4 h-4 text-indigo-400"></i>
+            <span>NeurIPS</span>
+          </li>
+          <li class="flex items-center space-x-2 border border-white/15 px-4 py-2 bg-white/5">
+            <i data-lucide="cpu" class="w-4 h-4 text-indigo-400"></i>
+            <span>ICML</span>
+          </li>
+          <li class="flex items-center space-x-2 border border-white/15 px-4 py-2 bg-white/5">
+            <i data-lucide="layers" class="w-4 h-4 text-indigo-400"></i>
+            <span>ICLR</span>
+          </li>
+          <li class="flex items-center space-x-2 border border-white/15 px-4 py-2 bg-white/5">
+            <i data-lucide="binary" class="w-4 h-4 text-indigo-400"></i>
+            <span>IEEE Xplore</span>
+          </li>
+          <li class="flex items-center space-x-2 border border-white/15 px-4 py-2 bg-white/5">
+            <i data-lucide="book-open" class="w-4 h-4 text-indigo-400"></i>
+            <span>Nature</span>
+          </li>
+          <li class="flex items-center space-x-2 border border-white/15 px-4 py-2 bg-white/5">
+            <i data-lucide="atom" class="w-4 h-4 text-indigo-400"></i>
+            <span>Science</span>
+          </li>
+          <li class="flex items-center space-x-2 border border-white/15 px-4 py-2 bg-white/5">
+            <i data-lucide="message-square-code" class="w-4 h-4 text-indigo-400"></i>
+            <span>ACL Anthology</span>
+          </li>
+          <li class="flex items-center space-x-2 border border-white/15 px-4 py-2 bg-white/5">
+            <i data-lucide="activity" class="w-4 h-4 text-indigo-400"></i>
+            <span>PubMed</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       MAIN INTERACTIVE WORKSPACE (Paper Library, Analysis, Chat & Compare)
+       ========================================================================= -->
+  <section id="workspace" class="border-b border-white/20 py-12">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="border-x border-white/20 p-4 sm:p-8">
+        
+        <div class="mb-8 flex flex-col sm:flex-row justify-between sm:items-end gap-4">
+          <div>
+            <span class="text-xs font-mono uppercase tracking-widest text-indigo-400">Active Workspace</span>
+            <h2 class="text-2xl sm:text-3xl font-medium text-white tracking-tight mt-1">Research Analysis Studio</h2>
+          </div>
+          <p class="text-xs font-mono text-white/60">Select an indexed publication or ingest a new document above.</p>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-6">
+
+          <!-- Left Sidebar: Paper Library -->
+          <aside class="w-full lg:w-80 flex-shrink-0 flex flex-col space-y-4">
+            <div class="border border-white/20 bg-white/[0.02] p-4 flex flex-col flex-1">
+              
+              <!-- Library Header -->
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-2 text-xs font-mono uppercase text-white/80">
+                  <i data-lucide="library" class="w-4 h-4 text-indigo-400"></i>
+                  <span>Paper Library</span>
+                </div>
+                <span id="paper-count-badge" class="text-xs font-mono bg-white/10 text-white px-2 py-0.5 border border-white/20">0</span>
+              </div>
+
+              <!-- Mode Switcher -->
+              <div class="grid grid-cols-2 gap-1 p-1 bg-[#0a0a0a] border border-white/20 mb-4 text-xs font-mono">
+                <button id="mode-analysis-btn" class="py-1.5 px-2 text-center transition bg-white text-black font-semibold">
+                  Analysis
+                </button>
+                <button id="mode-compare-btn" class="py-1.5 px-2 text-center transition text-white/60 hover:text-white">
+                  Compare
+                </button>
+              </div>
+
+              <!-- Search Papers -->
+              <div class="relative mb-3">
+                <i data-lucide="search" class="w-3.5 h-3.5 text-white/40 absolute left-3 top-3"></i>
+                <input id="search-papers" type="text" placeholder="Filter papers..." 
+                       class="w-full bg-[#0a0a0a] border border-white/20 pl-9 pr-3 py-2 text-xs text-white placeholder:text-white/40 font-mono focus:outline-none focus:border-white">
+              </div>
+
+              <!-- Paper List Container -->
+              <div id="paper-list-container" class="space-y-2 overflow-y-auto flex-1 pr-1 max-h-[500px]">
+                <div class="text-center py-10 text-white/40 text-xs font-mono">
+                  Loading papers...
+                </div>
+              </div>
+
+            </div>
+          </aside>
+
+          <!-- Main Content Area -->
+          <main class="flex-1 flex flex-col min-w-0">
+
+            <!-- Empty State / Ingestion placeholder in workspace -->
+            <div id="view-ingestion" class="border border-white/20 bg-white/[0.02] p-8 text-center flex flex-col items-center justify-center min-h-[450px]">
+              <div class="w-16 h-16 rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-white mb-4">
+                <i data-lucide="file-search" class="w-7 h-7 text-indigo-400"></i>
+              </div>
+              <h3 class="text-xl font-medium text-white mb-2">No Publication Selected</h3>
+              <p class="text-sm text-white/70 max-w-md mx-auto mb-6">
+                Choose an indexed paper from the library on the left, or enter an arXiv identifier in the console above to run full analysis.
+              </p>
+              <button onclick="loadSamplePaperShortcut()" class="btn-writemate btn-writemate-primary px-5 py-2.5 text-xs uppercase font-mono font-semibold">
+                <i data-lucide="play" class="w-3.5 h-3.5 mr-2"></i>
+                <span>Load Sample Research Paper</span>
+              </button>
+            </div>
+
+            <!-- Active Paper Analysis View -->
+            <div id="view-analysis" class="hidden flex-col flex-1 space-y-4">
+              
+              <!-- Paper Banner Card -->
+              <div class="border border-white/20 bg-white/[0.02] p-6">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                  <div class="space-y-2 flex-1 min-w-0">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span id="banner-arxiv-badge" class="hidden text-xs font-mono bg-indigo-950 text-indigo-300 border border-indigo-700/60 px-2.5 py-0.5"></span>
+                      <span id="banner-pages-badge" class="text-xs font-mono bg-white/10 text-white/90 border border-white/15 px-2.5 py-0.5"></span>
+                      <span id="banner-words-badge" class="text-xs font-mono bg-white/10 text-white/90 border border-white/15 px-2.5 py-0.5"></span>
+                    </div>
+                    <h1 id="banner-title" class="text-xl sm:text-2xl font-medium text-white leading-snug">Paper Title</h1>
+                    <p id="banner-authors" class="text-xs sm:text-sm text-white/70 font-mono">Authors</p>
+                  </div>
+
+                  <!-- Action Buttons -->
+                  <div class="flex flex-wrap items-center gap-2">
+                    <button id="btn-run-full" class="btn-writemate btn-writemate-primary px-4 py-2 text-xs font-mono uppercase font-semibold">
+                      <i data-lucide="play" class="w-3.5 h-3.5 mr-1.5"></i>
+                      <span>Run Full Agent Analysis</span>
+                    </button>
+
+                    <!-- Export Dropdown -->
+                    <div class="relative group">
+                      <button class="btn-writemate btn-writemate-ghost px-3.5 py-2 text-xs font-mono">
+                        <i data-lucide="download" class="w-3.5 h-3.5 mr-1.5"></i>
+                        <span>Export</span>
+                        <i data-lucide="chevron-down" class="w-3 h-3 ml-1"></i>
+                      </button>
+                      <div class="absolute right-0 mt-1 w-48 bg-[#0a0a0a] border border-white/20 shadow-2xl py-1 z-30 hidden group-hover:block font-mono text-xs">
+                        <a id="export-md" href="#" class="block px-4 py-2.5 text-white/80 hover:bg-white/10 hover:text-white">
+                          <i data-lucide="file-text" class="w-3.5 h-3.5 inline mr-2 text-indigo-400"></i> Markdown (.md)
+                        </a>
+                        <a id="export-html" href="#" class="block px-4 py-2.5 text-white/80 hover:bg-white/10 hover:text-white">
+                          <i data-lucide="file-code" class="w-3.5 h-3.5 inline mr-2 text-emerald-400"></i> Standalone HTML
+                        </a>
+                        <a id="export-json" href="#" class="block px-4 py-2.5 text-white/80 hover:bg-white/10 hover:text-white">
+                          <i data-lucide="file-json" class="w-3.5 h-3.5 inline mr-2 text-amber-400"></i> Structured JSON
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Analysis Progress Bar -->
+                <div id="analysis-progress-bar-container" class="hidden mt-5 pt-4 border-t border-white/15">
+                  <div class="flex justify-between items-center text-xs font-mono text-white/80 mb-2">
+                    <span id="analysis-status-message">Generating analysis...</span>
+                    <span id="analysis-progress-percent">0%</span>
+                  </div>
+                  <div class="w-full h-1.5 bg-white/10 overflow-hidden">
+                    <div id="analysis-progress-fill" class="h-full bg-white transition-all duration-300" style="width: 0%;"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Analysis Module Tabs -->
+              <div class="border border-white/20 bg-white/[0.02]">
+                
+                <!-- Tab Nav Buttons -->
+                <div class="flex border-b border-white/20 overflow-x-auto text-xs font-mono">
+                  <button class="tab-btn px-4 py-3 border-b-2 border-white text-white flex items-center space-x-1.5 whitespace-nowrap transition" data-tab="summary">
+                    <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                    <span>Summary</span>
+                  </button>
+                  <button class="tab-btn px-4 py-3 border-b-2 border-transparent text-white/60 hover:text-white flex items-center space-x-1.5 whitespace-nowrap transition" data-tab="methodology">
+                    <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
+                    <span>Methodology</span>
+                  </button>
+                  <button class="tab-btn px-4 py-3 border-b-2 border-transparent text-white/60 hover:text-white flex items-center space-x-1.5 whitespace-nowrap transition" data-tab="review">
+                    <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i>
+                    <span>Peer Review</span>
+                  </button>
+                  <button class="tab-btn px-4 py-3 border-b-2 border-transparent text-white/60 hover:text-white flex items-center space-x-1.5 whitespace-nowrap transition" data-tab="benchmarks">
+                    <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i>
+                    <span>Benchmarks</span>
+                  </button>
+                  <button class="tab-btn px-4 py-3 border-b-2 border-transparent text-white/60 hover:text-white flex items-center space-x-1.5 whitespace-nowrap transition" data-tab="limitations">
+                    <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+                    <span>Limitations</span>
+                  </button>
+                  <button class="tab-btn px-4 py-3 border-b-2 border-transparent text-white/60 hover:text-white flex items-center space-x-1.5 whitespace-nowrap transition" data-tab="implementation">
+                    <i data-lucide="code-2" class="w-3.5 h-3.5"></i>
+                    <span>Replication</span>
+                  </button>
+                  <button class="tab-btn px-4 py-3 border-b-2 border-transparent text-white/60 hover:text-white flex items-center space-x-1.5 whitespace-nowrap transition" data-tab="chat">
+                    <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+                    <span>Paper Chat</span>
+                  </button>
+                </div>
+
+                <!-- Tab Section Content (Markdown View) -->
+                <div id="tab-section-content" class="p-6 sm:p-8 min-h-[450px]">
+                  
+                  <div id="section-placeholder" class="text-center py-16 text-white/40 font-mono text-xs">
+                    <i data-lucide="file-text" class="w-10 h-10 mx-auto mb-3 text-white/20"></i>
+                    <p>No analysis generated for this section yet.</p>
+                    <p class="mt-1 text-white/60">Click "Run Full Agent Analysis" above to generate this section.</p>
+                  </div>
+
+                  <div id="section-rendered-body" class="prose prose-invert max-w-none hidden"></div>
+                </div>
+
+                <!-- Tab Chat Container -->
+                <div id="tab-chat-container" class="hidden p-6 flex flex-col h-[600px]">
+                  
+                  <!-- Suggested Questions Box -->
+                  <div id="chat-starters-box" class="mb-4 hidden">
+                    <div class="text-[11px] font-mono text-white/50 mb-2 uppercase">Suggested Probing Questions:</div>
+                    <div id="chat-starters-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+                  </div>
+
+                  <!-- Chat Thread -->
+                  <div id="chat-thread" class="flex-1 overflow-y-auto space-y-4 pr-2 mb-4">
+                    <div class="flex items-start space-x-3">
+                      <div class="w-7 h-7 bg-white text-black flex items-center justify-center flex-shrink-0 font-bold text-xs">
+                        <i data-lucide="brain" class="w-4 h-4"></i>
+                      </div>
+                      <div class="border border-white/20 bg-white/[0.03] p-4 text-xs sm:text-sm text-white/90 max-w-2xl font-mono leading-relaxed">
+                        I am your ResearchMind AI Assistant. I have indexed the complete text of this paper. Ask me anything about its mathematical formulations, benchmark results, limitations, or replication details!
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Chat Input Form -->
+                  <form id="chat-form" class="flex gap-2">
+                    <input id="chat-input" type="text" placeholder="Ask a question about this paper (grounded citations)..." 
+                           class="flex-1 bg-[#0a0a0a] border border-white/20 px-4 py-3 text-xs sm:text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-white font-mono">
+                    <button type="submit" class="btn-writemate btn-writemate-primary px-5 py-3 text-xs font-mono uppercase font-semibold">
+                      <i data-lucide="send" class="w-3.5 h-3.5 mr-1"></i>
+                      <span>Ask</span>
+                    </button>
+                  </form>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Multi-Paper Comparison View -->
+            <div id="view-compare" class="hidden flex-col flex-1 space-y-6">
+              <div class="border border-white/20 bg-white/[0.02] p-6">
+                <h3 class="text-lg font-medium text-white mb-2">Multi-Paper Synthesis Studio</h3>
+                <p class="text-xs text-white/70 font-mono mb-4">Select 2 or more papers to generate a comparative analysis matrix.</p>
+                
+                <div id="compare-selection-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4"></div>
+
+                <button id="btn-run-compare" class="btn-writemate btn-writemate-primary px-5 py-2.5 text-xs font-mono uppercase font-semibold">
+                  <i data-lucide="git-compare" class="w-3.5 h-3.5 mr-1.5"></i>
+                  <span>Synthesize Comparison</span>
+                </button>
+              </div>
+
+              <div class="border border-white/20 bg-white/[0.02] p-6 sm:p-8 min-h-[400px]">
+                <div id="compare-result-placeholder" class="text-center py-16 text-white/40 font-mono text-xs">
+                  <i data-lucide="layers" class="w-10 h-10 mx-auto mb-3 text-white/20"></i>
+                  <p>Select 2+ papers and click "Synthesize Comparison".</p>
+                </div>
+                <div id="compare-rendered-body" class="prose prose-invert max-w-none hidden"></div>
+              </div>
+            </div>
+
+          </main>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       SECTION: WHAT YOU GET (6 Analysis Pillars in WriteMate Bento Style)
+       ========================================================================= -->
+  <section id="features" class="border-b border-white/20 py-20">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="border-x border-white/20 p-6 sm:p-12 lg:p-16">
+        
+        <div class="max-w-2xl mb-16">
+          <span class="text-xs font-mono uppercase tracking-widest text-indigo-400">Comprehensive Analysis</span>
+          <h2 class="text-3xl sm:text-4xl font-medium text-white tracking-tight mt-1 mb-4">What You Get</h2>
+          <p class="text-base text-white/80 font-light leading-relaxed">
+            Ingest any technical preprint or publication — ResearchMind extracts mathematical formulations, tests empirical validity, reveals hidden assumptions, and drafts replication blueprints.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          
+          <!-- Card 1 -->
+          <div class="wireframe-card p-8 group">
+            <div class="w-12 h-12 border border-white/20 bg-white/5 flex items-center justify-center mb-6 text-white group-hover:border-white transition">
+              <i data-lucide="zap" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-xl font-medium text-white mb-2">Executive Summary & TL;DR</h3>
+            <p class="text-sm text-white/70 font-light mb-6 leading-relaxed">
+              3 core takeaways, problem formulation, central hypothesis, and headline empirical results in clear, bold points.
+            </p>
+            <a href="#workspace" class="inline-flex items-center text-xs font-mono text-white/80 hover:text-white group-hover:translate-x-1 transition">
+              <span>View in Workspace</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
+            </a>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="wireframe-card p-8 group">
+            <div class="w-12 h-12 border border-white/20 bg-white/5 flex items-center justify-center mb-6 text-white group-hover:border-white transition">
+              <i data-lucide="cpu" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-xl font-medium text-white mb-2">Methodology & Architecture</h3>
+            <p class="text-sm text-white/70 font-light mb-6 leading-relaxed">
+              Deconstructs architectural pipelines, loss functions, optimization objectives, and mathematical guarantees in KaTeX.
+            </p>
+            <a href="#workspace" class="inline-flex items-center text-xs font-mono text-white/80 hover:text-white group-hover:translate-x-1 transition">
+              <span>View in Workspace</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
+            </a>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="wireframe-card p-8 group">
+            <div class="w-12 h-12 border border-white/20 bg-white/5 flex items-center justify-center mb-6 text-white group-hover:border-white transition">
+              <i data-lucide="shield-alert" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-xl font-medium text-white mb-2">Critical Peer Review</h3>
+            <p class="text-sm text-white/70 font-light mb-6 leading-relaxed">
+              Senior peer reviewer evaluation: methodological validity, baseline omissions, confounding factors, and claims vs. evidence.
+            </p>
+            <a href="#workspace" class="inline-flex items-center text-xs font-mono text-white/80 hover:text-white group-hover:translate-x-1 transition">
+              <span>View in Workspace</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
+            </a>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="wireframe-card p-8 group">
+            <div class="w-12 h-12 border border-white/20 bg-white/5 flex items-center justify-center mb-6 text-white group-hover:border-white transition">
+              <i data-lucide="bar-chart-3" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-xl font-medium text-white mb-2">Benchmark & Findings Matrix</h3>
+            <p class="text-sm text-white/70 font-light mb-6 leading-relaxed">
+              Structured performance comparison tables, ablation study breakdown, statistical significance, and efficiency trade-offs.
+            </p>
+            <a href="#workspace" class="inline-flex items-center text-xs font-mono text-white/80 hover:text-white group-hover:translate-x-1 transition">
+              <span>View in Workspace</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
+            </a>
+          </div>
+
+          <!-- Card 5 -->
+          <div class="wireframe-card p-8 group">
+            <div class="w-12 h-12 border border-white/20 bg-white/5 flex items-center justify-center mb-6 text-white group-hover:border-white transition">
+              <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-xl font-medium text-white mb-2">Limitations & Future Work</h3>
+            <p class="text-sm text-white/70 font-light mb-6 leading-relaxed">
+              Identifies unaddressed failure modes, compute bottlenecks, real-world deployment challenges, and open research directions.
+            </p>
+            <a href="#workspace" class="inline-flex items-center text-xs font-mono text-white/80 hover:text-white group-hover:translate-x-1 transition">
+              <span>View in Workspace</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
+            </a>
+          </div>
+
+          <!-- Card 6 -->
+          <div class="wireframe-card p-8 group">
+            <div class="w-12 h-12 border border-white/20 bg-white/5 flex items-center justify-center mb-6 text-white group-hover:border-white transition">
+              <i data-lucide="code-2" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-xl font-medium text-white mb-2">Replication & Code Guide</h3>
+            <p class="text-sm text-white/70 font-light mb-6 leading-relaxed">
+              Step-by-step reproduction guide: PyTorch/JAX snippets, tensor dimensions, hyperparameter schedules, and computational budgets.
+            </p>
+            <a href="#workspace" class="inline-flex items-center text-xs font-mono text-white/80 hover:text-white group-hover:translate-x-1 transition">
+              <span>View in Workspace</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
+            </a>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       SECTION: USE CASES (WriteMate Architectural 3-Column Divide Grid)
+       ========================================================================= -->
+  <section id="use-cases" class="border-b border-white/20 py-20">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="border-x border-white/20 p-6 sm:p-12 lg:p-16">
+        
+        <div class="max-w-2xl mx-auto text-center mb-16">
+          <span class="text-xs font-mono uppercase tracking-widest text-indigo-400">Workflow Acceleration</span>
+          <h2 class="text-3xl sm:text-4xl font-medium text-white tracking-tight mt-1 mb-4">ResearchMind AI Use Cases</h2>
+          <p class="text-base text-white/80 font-light leading-relaxed">
+            Engineered for academic researchers, machine learning engineers, graduate students, and peer reviewers.
+          </p>
+        </div>
+
+        <div class="border border-white/20">
+          <div class="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-white/20">
+            
+            <!-- Column 1 -->
+            <div class="divide-y divide-white/20">
+              <div class="p-6 lg:p-10 hover:bg-white/[0.03] transition duration-300">
+                <span class="text-xs font-mono text-indigo-400 mb-2 block">01 / LITERATURE REVIEW</span>
+                <h3 class="text-xl font-medium text-white mb-3">Rapid Survey Synthesis</h3>
+                <p class="text-sm text-white/70 font-light leading-relaxed">
+                  Synthesize dozens of related publications in hours instead of weeks. Extract common threads and conflicting conclusions effortlessly.
+                </p>
+              </div>
+              <div class="p-6 lg:p-10 hover:bg-white/[0.03] transition duration-300">
+                <span class="text-xs font-mono text-indigo-400 mb-2 block">02 / THESIS & GRANTS</span>
+                <h3 class="text-xl font-medium text-white mb-3">Hypothesis & Proposal Defense</h3>
+                <p class="text-sm text-white/70 font-light leading-relaxed">
+                  Stress-test novel ideas against existing state-of-the-art literature before writing grant applications or dissertation chapters.
+                </p>
+              </div>
+            </div>
+
+            <!-- Column 2 -->
+            <div class="divide-y divide-white/20">
+              <div class="p-6 lg:p-10 hover:bg-white/[0.03] transition duration-300">
+                <span class="text-xs font-mono text-indigo-400 mb-2 block">03 / PEER REVIEWING</span>
+                <h3 class="text-xl font-medium text-white mb-3">Rigorous Review Preparation</h3>
+                <p class="text-sm text-white/70 font-light leading-relaxed">
+                  Catch missing ablation baselines, unsupported claims, and dataset leakage before completing conference or journal reviews.
+                </p>
+              </div>
+              <div class="p-6 lg:p-10 hover:bg-white/[0.03] transition duration-300">
+                <span class="text-xs font-mono text-indigo-400 mb-2 block">04 / ML ENGINEERING</span>
+                <h3 class="text-xl font-medium text-white mb-3">Production Algorithm Porting</h3>
+                <p class="text-sm text-white/70 font-light leading-relaxed">
+                  Translate theoretical equations directly into clean production code with tensor shapes, data loaders, and training parameters.
+                </p>
+              </div>
+            </div>
+
+            <!-- Column 3 -->
+            <div class="divide-y divide-white/20">
+              <div class="p-6 lg:p-10 hover:bg-white/[0.03] transition duration-300">
+                <span class="text-xs font-mono text-indigo-400 mb-2 block">05 / BENCHMARKING</span>
+                <h3 class="text-xl font-medium text-white mb-3">Competitive Baseline Validation</h3>
+                <p class="text-sm text-white/70 font-light leading-relaxed">
+                  Verify reported scores against standardized benchmarks (MMLU, HumanEval, ImageNet) with exact citations to verify veracity.
+                </p>
+              </div>
+              <div class="p-6 lg:p-10 hover:bg-white/[0.03] transition duration-300">
+                <span class="text-xs font-mono text-indigo-400 mb-2 block">06 / COMPARISON</span>
+                <h3 class="text-xl font-medium text-white mb-3">Cross-Paper Matrix Synthesis</h3>
+                <p class="text-sm text-white/70 font-light leading-relaxed">
+                  Select multiple papers and generate side-by-side comparative matrices contrasting assumptions, performance, and efficiency.
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       SECTION: PLANS & MODELS (WriteMate Pricing Card Style)
+       ========================================================================= -->
+  <section id="models" class="border-b border-white/20 py-20">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="border-x border-white/20 p-6 sm:p-12 lg:p-16">
+        
+        <div class="max-w-2xl mx-auto text-center mb-16">
+          <span class="text-xs font-mono uppercase tracking-widest text-indigo-400">Gemini 3.x Multi-LLM Architecture</span>
+          <h2 class="text-3xl sm:text-4xl font-medium text-white tracking-tight mt-1 mb-4">Supported Models & Engines</h2>
+          <p class="text-base text-white/80 font-light leading-relaxed">
+            Select the optimal model for your workflow. Powered by Google AI Studio Gemini 3.x foundational models.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          <!-- Model Card 1 -->
+          <div class="border border-white/20 bg-white/[0.02] p-8 flex flex-col justify-between relative">
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-white/60 mb-2 block">Ultra-Low Latency</span>
+              <h3 class="text-2xl font-medium text-white mb-2">Gemini 3.5 Lite</h3>
+              <p class="text-sm text-white/70 font-light mb-6">Best for rapid skimming, starter question generation, and instant summaries.</p>
+              
+              <div class="py-4 border-y border-white/10 mb-6 font-mono">
+                <span class="text-3xl font-normal text-white">Free / Fast</span>
+                <span class="text-xs text-white/60 block mt-1">1M Token Context Window</span>
+              </div>
+
+              <ul class="space-y-3 text-xs font-mono text-white/80 mb-8">
+                <li class="flex items-center space-x-2">
+                  <i data-lucide="check" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+                  <span>Sub-second token streaming</span>
+                </li>
+                <li class="flex items-center space-x-2">
+                  <i data-lucide="check" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+                  <span>Quick executive summaries</span>
+                </li>
+                <li class="flex items-center space-x-2">
+                  <i data-lucide="check" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+                  <span>Lightweight Q&A responses</span>
+                </li>
+              </ul>
+            </div>
+            
+            <button onclick="selectModelShortcut('gemini-3.5-flash-lite')" class="btn-writemate btn-writemate-ghost w-full py-3 text-xs uppercase font-mono">
+              Use Gemini 3.5 Lite
+            </button>
+          </div>
+
+          <!-- Model Card 2 (Most Popular / Recommended) -->
+          <div class="border-2 border-white bg-white/[0.05] p-8 flex flex-col justify-between relative shadow-2xl">
+            <span class="absolute -top-3 right-6 px-3 py-0.5 bg-white text-black font-mono text-[10px] font-bold uppercase tracking-widest">
+              Recommended
+            </span>
+            
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-indigo-400 mb-2 block">Balanced Reasoning</span>
+              <h3 class="text-2xl font-medium text-white mb-2">Gemini 3.5 Flash</h3>
+              <p class="text-sm text-white/70 font-light mb-6">Default engine. Optimal balance of speed, deep scientific reasoning, and mathematical precision.</p>
+              
+              <div class="py-4 border-y border-white/20 mb-6 font-mono">
+                <span class="text-3xl font-normal text-white">Recommended</span>
+                <span class="text-xs text-white/60 block mt-1">Full 6-Module Deep Extraction</span>
+              </div>
+
+              <ul class="space-y-3 text-xs font-mono text-white/80 mb-8">
+                <li class="flex items-center space-x-2">
+                  <i data-lucide="check" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+                  <span>Formal LaTeX math extraction</span>
+                </li>
+                <li class="flex items-center space-x-2">
+                  <i data-lucide="check" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+                  <span>Critical peer review & threats</span>
+                </li>
+                <li class="flex items-center space-x-2">
+                  <i data-lucide="check" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+                  <span>Interactive grounded paper chat</span>
+                </li>
+                <li class="flex items-center space-x-2">
+                  <i data-lucide="check" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+                  <span>Automatic resilient fallback</span>
+                </li>
+              </ul>
+            </div>
+            
+            <button onclick="selectModelShortcut('gemini-3.5-flash')" class="btn-writemate btn-writemate-primary w-full py-3 text-xs uppercase font-mono font-bold">
+              Use Gemini 3.5 Flash
+            </button>
+          </div>
+
+          <!-- Model Card 3 -->
+          <div class="border border-white/20 bg-white/[0.02] p-8 flex flex-col justify-between relative">
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-white/60 mb-2 block">Advanced Reasoning</span>
+              <h3 class="text-2xl font-medium text-white mb-2">Gemini 3.8 Flash</h3>
+              <p class="text-sm text-white/70 font-light mb-6">Deepest analytical capabilities for multi-paper cross synthesis and complex theorem proofs.</p>
+              
+              <div class="py-4 border-y border-white/10 mb-6 font-mono">
+                <span class="text-3xl font-normal text-white">Deep Synthesis</span>
+                <span class="text-xs text-white/60 block mt-1">Complex Multi-Paper Comparison</span>
+              </div>
+
+              <ul class="space-y-3 text-xs font-mono text-white/80 mb-8">
+                <li class="flex items-center space-x-2">
+                  <i data-lucide="check" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+                  <span>Multi-paper comparison matrices</span>
+                </li>
+                <li class="flex items-center space-x-2">
+                  <i data-lucide="check" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+                  <span>Complex theoretical bound proofs</span>
+                </li>
+                <li class="flex items-center space-x-2">
+                  <i data-lucide="check" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+                  <span>Exhaustive implementation guides</span>
+                </li>
+              </ul>
+            </div>
+            
+            <button onclick="selectModelShortcut('gemini-3.8-flash')" class="btn-writemate btn-writemate-ghost w-full py-3 text-xs uppercase font-mono">
+              Use Gemini 3.8 Flash
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       SECTION: TESTIMONIALS (WriteMate Dual Marquee)
+       ========================================================================= -->
+  <section class="border-b border-white/20 py-20 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="border-x border-white/20 p-6 sm:p-12 text-center">
+        
+        <div class="max-w-xl mx-auto mb-16">
+          <span class="text-xs font-mono uppercase tracking-widest text-indigo-400">Community Feedback</span>
+          <h2 class="text-3xl sm:text-4xl font-medium text-white tracking-tight mt-1 mb-4">Hear From Our Community</h2>
+          <p class="text-base text-white/80 font-light leading-relaxed">
+            Researchers, engineers, and faculty use ResearchMind AI to understand technical papers in minutes — not days.
+          </p>
+        </div>
+
+        <!-- Marquee Row 1 (Left) -->
+        <div class="w-full inline-flex flex-nowrap overflow-hidden marquee-mask mb-6">
+          <ul class="flex items-center space-x-6 animate-scroll-left">
+            <li class="p-6 border border-white/15 bg-white/[0.02] w-[380px] text-left">
+              <div class="flex items-center space-x-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-white text-xs">AR</div>
+                <div>
+                  <h4 class="text-sm font-medium text-white">Dr. Ananya Rao</h4>
+                  <span class="text-xs font-mono text-white/50">NLP Lab, Stanford</span>
+                </div>
+              </div>
+              <p class="text-xs text-white/80 leading-relaxed font-light">
+                "The critical peer review module is uncanny. It instantly caught an unstated assumption in a recent CVPR paper that took our reading group an hour to find."
+              </p>
+            </li>
+            <li class="p-6 border border-white/15 bg-white/[0.02] w-[380px] text-left">
+              <div class="flex items-center space-x-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-white text-xs">MK</div>
+                <div>
+                  <h4 class="text-sm font-medium text-white">Marcus Keller</h4>
+                  <span class="text-xs font-mono text-white/50">Staff ML Engineer, DeepDrive</span>
+                </div>
+              </div>
+              <p class="text-xs text-white/80 leading-relaxed font-light">
+                "The replication guide section saved my team days of guessing tensor dimensions and training schedules. A must-have tool for ML teams."
+              </p>
+            </li>
+            <li class="p-6 border border-white/15 bg-white/[0.02] w-[380px] text-left">
+              <div class="flex items-center space-x-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-violet-600 flex items-center justify-center font-bold text-white text-xs">SL</div>
+                <div>
+                  <h4 class="text-sm font-medium text-white">Sarah Lin</h4>
+                  <span class="text-xs font-mono text-white/50">PhD Candidate, MIT CSAIL</span>
+                </div>
+              </div>
+              <p class="text-xs text-white/80 leading-relaxed font-light">
+                "Grounding answers with explicit page numbers [Page X] gives me total confidence. I can cite the exact sections in my dissertation."
+              </p>
+            </li>
+            <li class="p-6 border border-white/15 bg-white/[0.02] w-[380px] text-left">
+              <div class="flex items-center space-x-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-amber-600 flex items-center justify-center font-bold text-white text-xs">JW</div>
+                <div>
+                  <h4 class="text-sm font-medium text-white">Julian Weiss</h4>
+                  <span class="text-xs font-mono text-white/50">Principal Scientist, BioAI</span>
+                </div>
+              </div>
+              <p class="text-xs text-white/80 leading-relaxed font-light">
+                "Comparing 4 preprints side-by-side in under 30 seconds completely revolutionizes how we keep up with weekly arXiv floods."
+              </p>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Marquee Row 2 (Right) -->
+        <div class="w-full inline-flex flex-nowrap overflow-hidden marquee-mask">
+          <ul class="flex items-center space-x-6 animate-scroll-right">
+            <li class="p-6 border border-white/15 bg-white/[0.02] w-[380px] text-left">
+              <div class="flex items-center space-x-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold text-white text-xs">ED</div>
+                <div>
+                  <h4 class="text-sm font-medium text-white">Elena Dmitrieva</h4>
+                  <span class="text-xs font-mono text-white/50">Postdoc, Oxford</span>
+                </div>
+              </div>
+              <p class="text-xs text-white/80 leading-relaxed font-light">
+                "The LaTeX math rendering in the browser is gorgeous. Equations look identical to the original paper's typography."
+              </p>
+            </li>
+            <li class="p-6 border border-white/15 bg-white/[0.02] w-[380px] text-left">
+              <div class="flex items-center space-x-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-rose-600 flex items-center justify-center font-bold text-white text-xs">TK</div>
+                <div>
+                  <h4 class="text-sm font-medium text-white">Tariq Khan</h4>
+                  <span class="text-xs font-mono text-white/50">Research Fellow, Alan Turing Inst</span>
+                </div>
+              </div>
+              <p class="text-xs text-white/80 leading-relaxed font-light">
+                "Exporting directly to standalone HTML and Markdown makes sharing literature reviews with co-authors seamless."
+              </p>
+            </li>
+            <li class="p-6 border border-white/15 bg-white/[0.02] w-[380px] text-left">
+              <div class="flex items-center space-x-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-teal-600 flex items-center justify-center font-bold text-white text-xs">CL</div>
+                <div>
+                  <h4 class="text-sm font-medium text-white">Claire Liu</h4>
+                  <span class="text-xs font-mono text-white/50">AI Safety Researcher</span>
+                </div>
+              </div>
+              <p class="text-xs text-white/80 leading-relaxed font-light">
+                "I use ResearchMind to audit claims in new foundation model technical reports. The benchmark analysis is second to none."
+              </p>
+            </li>
+            <li class="p-6 border border-white/15 bg-white/[0.02] w-[380px] text-left">
+              <div class="flex items-center space-x-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center font-bold text-white text-xs">DV</div>
+                <div>
+                  <h4 class="text-sm font-medium text-white">Daniel Vance</h4>
+                  <span class="text-xs font-mono text-white/50">Applied Scientist, GraphCore</span>
+                </div>
+              </div>
+              <p class="text-xs text-white/80 leading-relaxed font-light">
+                "The automatic fallback ensures our queries never fail even when upstream models face temporary demand spikes."
+              </p>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       SECTION: FAQ (WriteMate Interactive Accordion)
+       ========================================================================= -->
+  <section id="faq" class="border-b border-white/20 py-20">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="border-x border-white/20 p-6 sm:p-12 lg:p-16">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          
+          <div class="lg:col-span-5">
+            <span class="text-xs font-mono uppercase tracking-widest text-indigo-400">Questions & Answers</span>
+            <h2 class="text-3xl sm:text-4xl font-medium text-white tracking-tight mt-1 mb-4">Frequently Asked Questions</h2>
+            <p class="text-base text-white/80 font-light leading-relaxed mb-6">
+              Have questions regarding how ResearchMind AI processes PDFs, manages API keys, or handles grounded citations?
+            </p>
+            <button onclick="document.getElementById('btn-settings').click()" class="btn-writemate btn-writemate-ghost px-4 py-2.5 text-xs font-mono">
+              <i data-lucide="settings" class="w-3.5 h-3.5 mr-1.5"></i>
+              <span>Configure Gemini API Key</span>
+            </button>
+          </div>
+
+          <div class="lg:col-span-7 space-y-4">
+            
+            <div class="faq-item border border-white/15 bg-white/[0.02] p-5 cursor-pointer" onclick="toggleFaq(this)">
+              <div class="flex justify-between items-center">
+                <h3 class="text-base font-medium text-white">What is ResearchMind AI?</h3>
+                <i data-lucide="chevron-down" class="faq-chevron w-4 h-4 text-white/60 transition-transform duration-300"></i>
+              </div>
+              <div class="faq-content text-xs font-mono text-white/70 leading-relaxed">
+                ResearchMind AI is an agentic academic research intelligence platform. It ingests scientific publications from arXiv or local PDF uploads, parses mathematical structures, generates in-depth 6-pillar scientific analyses, and supports conversational Q&A with grounded page citations.
+              </div>
+            </div>
+
+            <div class="faq-item border border-white/15 bg-white/[0.02] p-5 cursor-pointer" onclick="toggleFaq(this)">
+              <div class="flex justify-between items-center">
+                <h3 class="text-base font-medium text-white">How does ResearchMind ground its answers?</h3>
+                <i data-lucide="chevron-down" class="faq-chevron w-4 h-4 text-white/60 transition-transform duration-300"></i>
+              </div>
+              <div class="faq-content text-xs font-mono text-white/70 leading-relaxed">
+                During PDF parsing, ResearchMind demarcates exact page markers and section headings across the document. Prompts enforce strict citations (e.g. `[Page 3, Section 4.1]`) and mathematical veracity in KaTeX LaTeX notation.
+              </div>
+            </div>
+
+            <div class="faq-item border border-white/15 bg-white/[0.02] p-5 cursor-pointer" onclick="toggleFaq(this)">
+              <div class="flex justify-between items-center">
+                <h3 class="text-base font-medium text-white">Which Gemini models are supported?</h3>
+                <i data-lucide="chevron-down" class="faq-chevron w-4 h-4 text-white/60 transition-transform duration-300"></i>
+              </div>
+              <div class="faq-content text-xs font-mono text-white/70 leading-relaxed">
+                ResearchMind supports Google's active Gemini 3.x foundational models: Gemini 3.5 Flash (Recommended), Gemini 3.5 Flash Lite, Gemini 3.6 Flash, and Gemini 3.8 Flash, backed by an automatic resilient model fallback system.
+              </div>
+            </div>
+
+            <div class="faq-item border border-white/15 bg-white/[0.02] p-5 cursor-pointer" onclick="toggleFaq(this)">
+              <div class="flex justify-between items-center">
+                <h3 class="text-base font-medium text-white">Can I compare multiple research papers simultaneously?</h3>
+                <i data-lucide="chevron-down" class="faq-chevron w-4 h-4 text-white/60 transition-transform duration-300"></i>
+              </div>
+              <div class="faq-content text-xs font-mono text-white/70 leading-relaxed">
+                Yes! Toggle the workspace to "Compare" mode, select 2 or more publications from your paper library, and click "Synthesize Comparison" to generate an objective structured cross-paper matrix.
+              </div>
+            </div>
+
+            <div class="faq-item border border-white/15 bg-white/[0.02] p-5 cursor-pointer" onclick="toggleFaq(this)">
+              <div class="flex justify-between items-center">
+                <h3 class="text-base font-medium text-white">Where is my data and research stored?</h3>
+                <i data-lucide="chevron-down" class="faq-chevron w-4 h-4 text-white/60 transition-transform duration-300"></i>
+              </div>
+              <div class="faq-content text-xs font-mono text-white/70 leading-relaxed">
+                All parsed PDFs and analysis reports are persisted locally in your project's SQLite database (`data/researchmind.db`) and local filesystem. Your research remains private on your machine.
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       CTA SECTION (WriteMate Bottom Hero)
+       ========================================================================= -->
+  <section class="border-b border-white/20 py-20 relative overflow-hidden writemate-radial-bg">
+    <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+      <h2 class="text-3xl sm:text-5xl font-medium text-white mb-4 tracking-tight">
+        Ready to analyze research 10× faster?
+      </h2>
+      <p class="text-white/80 text-base max-w-lg mx-auto mb-8 font-light">
+        Start dissecting complex papers with grounded citations, mathematical rigor, and instant peer review.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <button onclick="loadSamplePaperShortcut()" class="btn-writemate btn-writemate-primary px-6 py-3.5 text-xs uppercase font-mono font-bold">
+          <i data-lucide="file-check" class="w-4 h-4 mr-2"></i>
+          <span>Try Sample Research Paper</span>
+        </button>
+        <button onclick="document.getElementById('input-arxiv').focus(); window.scrollTo({top: 0, behavior: 'smooth'});" class="btn-writemate btn-writemate-ghost px-6 py-3.5 text-xs uppercase font-mono">
+          <span>Ingest New Publication</span>
+          <i data-lucide="arrow-up-right" class="w-4 h-4 ml-2"></i>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       BLUEPRINT FOOTER (WriteMate Wireframe Footer)
+       ========================================================================= -->
+  <footer class="pt-12 pb-8 border-t border-white/20 bg-[#060606] text-xs font-mono text-white/60">
+    <div class="max-w-7xl mx-auto px-6">
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 pb-12 border-b border-white/10">
+        
+        <div class="space-y-3">
+          <div class="flex items-center space-x-2 text-white font-bold text-sm">
+            <i data-lucide="brain" class="w-4 h-4"></i>
+            <span>ResearchMind AI</span>
+          </div>
+          <p class="text-white/50 text-xs font-sans leading-relaxed">
+            Academic Research Intelligence Platform with grounded multi-pillar scientific analysis.
+          </p>
+          <div class="text-[11px] text-white/40">
+            Powered by Google Gemini 3.x
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-white uppercase tracking-wider text-[11px] mb-3">Navigation</h4>
+          <ul class="space-y-2">
+            <li><a href="#hero" class="hover:text-white transition">Home</a></li>
+            <li><a href="#workspace" class="hover:text-white transition">Workspace</a></li>
+            <li><a href="#features" class="hover:text-white transition">What You Get</a></li>
+            <li><a href="#use-cases" class="hover:text-white transition">Use Cases</a></li>
+            <li><a href="#models" class="hover:text-white transition">Models</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-white uppercase tracking-wider text-[11px] mb-3">Capabilities</h4>
+          <ul class="space-y-2">
+            <li>Executive Summary & TL;DR</li>
+            <li>Methodology Deconstruction</li>
+            <li>Critical Peer Review</li>
+            <li>Benchmark Verification</li>
+            <li>Code Replication Guide</li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-white uppercase tracking-wider text-[11px] mb-3">Engine Status</h4>
+          <div class="space-y-2">
+            <div class="flex items-center space-x-2 text-emerald-400">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span>Gemini 3.5 Flash Online</span>
+            </div>
+            <div class="flex items-center space-x-2 text-white/60">
+              <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+              <span>Local SQLite Database Active</span>
+            </div>
+            <div class="pt-2">
+              <button onclick="document.getElementById('btn-settings').click()" class="text-xs text-white/80 hover:text-white underline">
+                Settings & API Key
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="flex flex-col sm:flex-row justify-between items-center pt-6 text-[11px] text-white/40">
+        <div>
+          &copy; 2026 ResearchMind AI. Built with WriteMate AI Design System.
+        </div>
+        <div class="flex space-x-4 mt-2 sm:mt-0">
+          <a href="https://arxiv.org" target="_blank" class="hover:text-white transition">arXiv API</a>
+          <a href="https://ai.google.dev" target="_blank" class="hover:text-white transition">Google GenAI</a>
+          <a href="#hero" class="hover:text-white transition">Back to Top &uarr;</a>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- =========================================================================
+       SETTINGS MODAL DIALOG
+       ========================================================================= -->
+  <div id="settings-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#0c0c0c] border border-white/25 max-w-md w-full p-6 sm:p-8 shadow-2xl space-y-5">
+      
+      <div class="flex justify-between items-center border-b border-white/10 pb-4">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="sliders" class="w-4 h-4 text-indigo-400"></i>
+          <h3 class="font-medium text-base text-white">Engine Configuration</h3>
+        </div>
+        <button id="close-settings" class="text-white/60 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-white/70 font-mono leading-relaxed">
+        Configure your Google Gemini API key and active reasoning model for academic paper analysis.
+      </p>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-mono text-white/80 mb-1.5">GOOGLE GEMINI API KEY</label>
+          <input id="setting-api-key" type="password" placeholder="AIzaSy..." 
+                 class="w-full bg-[#060606] border border-white/20 px-3.5 py-2.5 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-white font-mono">
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-2 pt-2 border-t border-white/10">
+        <button id="btn-save-settings" class="btn-writemate btn-writemate-primary px-5 py-2 text-xs font-mono uppercase font-bold">
+          Save Settings
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JavaScript Controller -->
+  <script src="/static/js/app.js"></script>
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+    
+    // FAQ Toggle Handler
+    window.toggleFaq = function(element) {
+      element.classList.toggle('open');
+      lucide.createIcons();
+    };
+
+    // Quick Model Selector helper
+    window.selectModelShortcut = function(modelId) {
+      const select = document.getElementById('model-select');
+      if (select) {
+        select.value = modelId;
+        select.dispatchEvent(new Event('change'));
+      }
+      const workspace = document.getElementById('workspace');
+      if (workspace) {
+        workspace.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+
+    // Quick Sample Paper loader
+    window.loadSamplePaperShortcut = function() {
+      if (state && state.papers) {
+        const sample = state.papers.find(p => p.title.toLowerCase().includes('sample') || p.title.toLowerCase().includes('ai-based'));
+        if (sample) {
+          selectPaper(sample.id);
+          const workspace = document.getElementById('workspace');
+          if (workspace) workspace.scrollIntoView({ behavior: 'smooth' });
+          return;
+        }
+      }
+      setArxivExample('1706.03762');
+    };
+  </script>
+</body>
+</html>

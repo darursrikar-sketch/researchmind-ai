@@ -1,0 +1,33 @@
+# Environment variables & secrets
+.env
+.env.local
+
+# Local database & uploaded papers
+data/
+*.db
+*.sqlite3
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Virtual environment
+venv/
+.venv/
+env/
+ENV/
+
+# Operating system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# Temporary files & logs
+*.log
+scratch/
+create_shortcut.ps1
