@@ -1,7 +1,9 @@
+import os
 import json
 import time
 from pathlib import Path
-from flask import Flask, render_template, request, jsonify, Response, send_file, stream_with_context
+from flask import Flask, render_template, request, jsonify, Response, send_file, stream_with_context, session
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from researchmind.config import Config, AVAILABLE_MODELS, UPLOAD_DIR
 from researchmind.paper_loader import (
@@ -22,12 +24,98 @@ app = Flask(
     static_folder=str(Path(__file__).parent / "static"),
 )
 app.config["MAX_CONTENT_LENGTH"] = 64 * 1024 * 1024  # 64MB max PDF upload
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "researchmind-secret-key-prod-random-2026")
 
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
+
+# ==================== Authentication Endpoints ====================
+
+@app.route("/api/auth/me", methods=["GET"])
+def get_current_user():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"user": None})
+    user = storage.get_user_by_id(user_id)
+    if not user:
+        session.pop("user_id", None)
+        return jsonify({"user": None})
+    return jsonify({
+        "user": {
+            "id": user["id"],
+            "username": user["username"],
+            "email": user["email"],
+            "created_at": user["created_at"],
+        }
+    })
+
+
+@app.route("/api/auth/signup", methods=["POST"])
+def signup():
+    data = request.get_json() or {}
+    username = data.get("username", "").strip()
+    email = data.get("email", "").strip().lower()
+    password = data.get("password", "")
+
+    if not username or len(username) < 3:
+        return jsonify({"error": "Username must be at least 3 characters long."}), 400
+    if not email or "@" not in email or "." not in email:
+        return jsonify({"error": "Please enter a valid email address."}), 400
+    if not password or len(password) < 6:
+        return jsonify({"error": "Password must be at least 6 characters long."}), 400
+
+    # Check for existing email or username
+    existing_user = storage.get_user_by_identifier(email) or storage.get_user_by_identifier(username)
+    if existing_user:
+        if existing_user["email"].lower() == email:
+            return jsonify({"error": "An account with this email already exists."}), 409
+        return jsonify({"error": "This username is already taken. Please choose another."}), 409
+
+    password_hash = generate_password_hash(password)
+    user = storage.create_user(username, email, password_hash)
+    session["user_id"] = user["id"]
+
+    return jsonify({
+        "status": "success",
+        "user": user,
+    }), 201
+
+
+@app.route("/api/auth/signin", methods=["POST"])
+def signin():
+    data = request.get_json() or {}
+    identifier = data.get("identifier", "").strip()
+    password = data.get("password", "")
+
+    if not identifier or not password:
+        return jsonify({"error": "Identifier (email or username) and password are required."}), 400
+
+    user = storage.get_user_by_identifier(identifier)
+    if not user or not check_password_hash(user["password_hash"], password):
+        return jsonify({"error": "Invalid email/username or password."}), 401
+
+    session["user_id"] = user["id"]
+    return jsonify({
+        "status": "success",
+        "user": {
+            "id": user["id"],
+            "username": user["username"],
+            "email": user["email"],
+            "created_at": user["created_at"],
+        }
+    })
+
+
+@app.route("/api/auth/signout", methods=["POST"])
+def signout():
+    session.pop("user_id", None)
+    return jsonify({"status": "success"})
+
+
+# ==================== Config Endpoints ====================
 
 @app.route("/api/config", methods=["GET", "POST"])
 def manage_config():
@@ -50,18 +138,22 @@ def manage_config():
     })
 
 
+# ==================== Paper Operations ====================
+
 @app.route("/api/papers", methods=["GET"])
 def list_papers():
-    papers = storage.list_papers()
+    user_id = session.get("user_id")
+    papers = storage.list_papers(user_id=user_id)
     return jsonify({"papers": papers})
 
 
 @app.route("/api/papers/<paper_id>", methods=["GET"])
 def get_paper(paper_id):
-    paper = storage.get_paper(paper_id)
+    user_id = session.get("user_id")
+    paper = storage.get_paper(paper_id, user_id=user_id)
     if not paper:
         return jsonify({"error": "Paper not found"}), 404
-    analysis = storage.get_analysis(paper_id)
+    analysis = storage.get_analysis(paper_id, user_id=user_id)
     return jsonify({
         "paper": paper.to_dict(),
         "analysis": analysis.to_dict() if analysis else None,
@@ -70,7 +162,8 @@ def get_paper(paper_id):
 
 @app.route("/api/papers/<paper_id>", methods=["DELETE"])
 def delete_paper(paper_id):
-    storage.delete_paper(paper_id)
+    user_id = session.get("user_id")
+    storage.delete_paper(paper_id, user_id=user_id)
     return jsonify({"status": "deleted", "paper_id": paper_id})
 
 
@@ -84,7 +177,6 @@ def upload_pdf():
         return jsonify({"error": "Empty filename"}), 400
 
     dest_path = UPLOAD_DIR / file.filename
-    # Handle filename collision
     counter = 1
     orig_stem = dest_path.stem
     while dest_path.exists():
@@ -95,7 +187,8 @@ def upload_pdf():
 
     try:
         paper = load_paper_from_path(dest_path)
-        storage.save_paper(paper)
+        user_id = session.get("user_id")
+        storage.save_paper(paper, user_id=user_id)
         return jsonify({
             "status": "success",
             "paper": paper.to_dict(),
@@ -113,7 +206,8 @@ def fetch_arxiv():
 
     try:
         paper = load_paper_from_arxiv(query)
-        storage.save_paper(paper)
+        user_id = session.get("user_id")
+        storage.save_paper(paper, user_id=user_id)
         return jsonify({
             "status": "success",
             "paper": paper.to_dict(),
@@ -128,8 +222,9 @@ def analyze():
     paper_id = data.get("paper_id")
     model = data.get("model") or Config.get_default_model()
     sections = data.get("sections") or list(MODULE_PROMPTS.keys())
+    user_id = session.get("user_id")
 
-    paper = storage.get_paper(paper_id)
+    paper = storage.get_paper(paper_id, user_id=user_id)
     if not paper:
         return jsonify({"error": "Paper not found"}), 404
 
@@ -159,9 +254,8 @@ def analyze():
             except Exception as ex:
                 yield f"data: {json.dumps({'event': 'section_error', 'key': sec_key, 'title': sec_title, 'error': str(ex)})}\n\n"
 
-        # Persist completed analysis only if at least one section succeeded
         if result.sections:
-            storage.save_analysis(result)
+            storage.save_analysis(result, user_id=user_id)
         yield f"data: {json.dumps({'event': 'complete', 'paper_id': paper.id, 'success_count': len(result.sections), 'total': total_sections})}\n\n"
 
     return Response(stream_with_context(generate_events()), mimetype="text/event-stream")
@@ -174,11 +268,12 @@ def chat():
     message = data.get("message", "").strip()
     model = data.get("model") or Config.get_default_model()
     history = data.get("history", [])
+    user_id = session.get("user_id")
 
     if not message:
         return jsonify({"error": "Empty message"}), 400
 
-    paper = storage.get_paper(paper_id)
+    paper = storage.get_paper(paper_id, user_id=user_id)
     if not paper:
         return jsonify({"error": "Paper not found"}), 404
 
@@ -187,7 +282,6 @@ def chat():
 
     def generate_chat_stream():
         engine = PaperChatEngine(paper, model_name=model)
-        # Restore prior conversation history
         for item in history:
             engine.history.append(
                 item if hasattr(item, "role") else type("Msg", (), {"role": item.get("role"), "content": item.get("content")})()
@@ -205,7 +299,8 @@ def chat():
 
 @app.route("/api/chat/starters/<paper_id>", methods=["GET"])
 def get_chat_starters(paper_id):
-    paper = storage.get_paper(paper_id)
+    user_id = session.get("user_id")
+    paper = storage.get_paper(paper_id, user_id=user_id)
     if not paper:
         return jsonify({"error": "Paper not found"}), 404
 
@@ -239,13 +334,14 @@ def compare():
     data = request.get_json() or {}
     paper_ids = data.get("paper_ids", [])
     model = data.get("model") or Config.get_default_model()
+    user_id = session.get("user_id")
 
     if len(paper_ids) < 2:
         return jsonify({"error": "At least 2 papers are required for comparison"}), 400
 
     papers = []
     for pid in paper_ids:
-        p = storage.get_paper(pid)
+        p = storage.get_paper(pid, user_id=user_id)
         if p:
             papers.append(p)
 
@@ -270,7 +366,8 @@ def compare():
 @app.route("/api/export/<paper_id>", methods=["GET"])
 def export_analysis(paper_id):
     export_fmt = request.args.get("format", "md").lower()
-    analysis = storage.get_analysis(paper_id)
+    user_id = session.get("user_id")
+    analysis = storage.get_analysis(paper_id, user_id=user_id)
     if not analysis:
         return jsonify({"error": "No analysis found for this paper"}), 404
 
@@ -308,4 +405,3 @@ def create_app():
 if __name__ == "__main__":
     port = int(Config.get_api_key() and 5000 or 5000)
     app.run(host="127.0.0.1", port=port, debug=True)
-

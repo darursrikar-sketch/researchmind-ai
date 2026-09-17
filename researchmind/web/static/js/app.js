@@ -1,6 +1,7 @@
 // ResearchMind AI - Frontend Reactive Controller
 
 let state = {
+  currentUser: null,
   activePaper: null,
   activeAnalysis: null,
   papers: [],
@@ -20,6 +21,35 @@ const elements = {
   paperCountBadge: document.getElementById('paper-count-badge'),
   paperListContainer: document.getElementById('paper-list-container'),
   searchPapers: document.getElementById('search-papers'),
+
+  // Auth elements
+  authUnauthenticated: document.getElementById('auth-unauthenticated'),
+  authAuthenticated: document.getElementById('auth-authenticated'),
+  btnOpenSignin: document.getElementById('btn-open-signin'),
+  btnOpenSignup: document.getElementById('btn-open-signup'),
+  btnUserProfile: document.getElementById('btn-user-profile'),
+  userAvatarInitials: document.getElementById('user-avatar-initials'),
+  userDisplayName: document.getElementById('user-display-name'),
+  userDropdownName: document.getElementById('user-dropdown-name'),
+  userDropdownEmail: document.getElementById('user-dropdown-email'),
+  btnSignout: document.getElementById('btn-signout'),
+
+  authModal: document.getElementById('auth-modal'),
+  closeAuthModal: document.getElementById('close-auth-modal'),
+  authTabSignin: document.getElementById('auth-tab-signin'),
+  authTabSignup: document.getElementById('auth-tab-signup'),
+  authAlert: document.getElementById('auth-alert'),
+  formSignin: document.getElementById('form-signin'),
+  signinIdentifier: document.getElementById('signin-identifier'),
+  signinPassword: document.getElementById('signin-password'),
+  btnSubmitSignin: document.getElementById('btn-submit-signin'),
+  formSignup: document.getElementById('form-signup'),
+  signupUsername: document.getElementById('signup-username'),
+  signupEmail: document.getElementById('signup-email'),
+  signupPassword: document.getElementById('signup-password'),
+  signupConfirmPassword: document.getElementById('signup-confirm-password'),
+  btnSubmitSignup: document.getElementById('btn-submit-signup'),
+  btnContinueGuest: document.getElementById('btn-continue-guest'),
   
   modeAnalysisBtn: document.getElementById('mode-analysis-btn'),
   modeCompareBtn: document.getElementById('mode-compare-btn'),
@@ -124,6 +154,7 @@ function toggleTheme() {
 document.addEventListener('DOMContentLoaded', async () => {
   initTheme();
   setupEventListeners();
+  await checkCurrentUser();
   await checkConfig();
   await loadPaperLibrary();
 });
@@ -133,6 +164,35 @@ function setupEventListeners() {
   // Theme Toggle
   if (elements.btnThemeToggle) {
     elements.btnThemeToggle.addEventListener('click', toggleTheme);
+  }
+
+  // Auth Modals & Actions
+  if (elements.btnOpenSignin) {
+    elements.btnOpenSignin.addEventListener('click', () => openAuthModal('signin'));
+  }
+  if (elements.btnOpenSignup) {
+    elements.btnOpenSignup.addEventListener('click', () => openAuthModal('signup'));
+  }
+  if (elements.closeAuthModal) {
+    elements.closeAuthModal.addEventListener('click', closeAuthModal);
+  }
+  if (elements.btnContinueGuest) {
+    elements.btnContinueGuest.addEventListener('click', closeAuthModal);
+  }
+  if (elements.authTabSignin) {
+    elements.authTabSignin.addEventListener('click', () => switchAuthTab('signin'));
+  }
+  if (elements.authTabSignup) {
+    elements.authTabSignup.addEventListener('click', () => switchAuthTab('signup'));
+  }
+  if (elements.formSignin) {
+    elements.formSignin.addEventListener('submit', handleSigninSubmit);
+  }
+  if (elements.formSignup) {
+    elements.formSignup.addEventListener('submit', handleSignupSubmit);
+  }
+  if (elements.btnSignout) {
+    elements.btnSignout.addEventListener('click', handleSignout);
   }
 
   // Navigation & Modes
@@ -190,6 +250,168 @@ function setupEventListeners() {
   // Search filter
   elements.searchPapers.addEventListener('input', (e) => renderPaperList(e.target.value));
 }
+
+// ==================== User Authentication Handlers ====================
+
+async function checkCurrentUser() {
+  try {
+    const res = await fetch('/api/auth/me');
+    const data = await res.json();
+    state.currentUser = data.user || null;
+    updateAuthUI();
+  } catch (err) {
+    console.error('Failed to check current user:', err);
+  }
+}
+
+function updateAuthUI() {
+  if (state.currentUser) {
+    if (elements.authUnauthenticated) elements.authUnauthenticated.classList.add('hidden');
+    if (elements.authAuthenticated) elements.authAuthenticated.classList.remove('hidden');
+    const u = state.currentUser;
+    const initial = (u.username || u.email || 'U')[0].toUpperCase();
+    if (elements.userAvatarInitials) elements.userAvatarInitials.innerText = initial;
+    if (elements.userDisplayName) elements.userDisplayName.innerText = u.username || u.email;
+    if (elements.userDropdownName) elements.userDropdownName.innerText = u.username;
+    if (elements.userDropdownEmail) elements.userDropdownEmail.innerText = u.email;
+  } else {
+    if (elements.authUnauthenticated) elements.authUnauthenticated.classList.remove('hidden');
+    if (elements.authAuthenticated) elements.authAuthenticated.classList.add('hidden');
+  }
+  if (window.lucide) lucide.createIcons();
+}
+
+function openAuthModal(tab = 'signin') {
+  if (!elements.authModal) return;
+  elements.authModal.classList.remove('hidden');
+  clearAuthAlert();
+  switchAuthTab(tab);
+}
+
+function closeAuthModal() {
+  if (!elements.authModal) return;
+  elements.authModal.classList.add('hidden');
+  clearAuthAlert();
+}
+
+function switchAuthTab(tab) {
+  clearAuthAlert();
+  if (tab === 'signin') {
+    if (elements.authTabSignin) elements.authTabSignin.className = 'py-1.5 px-3 text-center transition font-semibold bg-white text-black';
+    if (elements.authTabSignup) elements.authTabSignup.className = 'py-1.5 px-3 text-center transition font-semibold text-white/70 hover:text-white';
+    if (elements.formSignin) elements.formSignin.classList.remove('hidden');
+    if (elements.formSignup) elements.formSignup.classList.add('hidden');
+  } else {
+    if (elements.authTabSignup) elements.authTabSignup.className = 'py-1.5 px-3 text-center transition font-semibold bg-white text-black';
+    if (elements.authTabSignin) elements.authTabSignin.className = 'py-1.5 px-3 text-center transition font-semibold text-white/70 hover:text-white';
+    if (elements.formSignup) elements.formSignup.classList.remove('hidden');
+    if (elements.formSignin) elements.formSignin.classList.add('hidden');
+  }
+}
+
+function showAuthAlert(msg, isError = true) {
+  if (!elements.authAlert) return;
+  elements.authAlert.className = isError 
+    ? 'p-3 text-xs font-mono border border-red-500/40 bg-red-950/40 text-red-300'
+    : 'p-3 text-xs font-mono border border-emerald-500/40 bg-emerald-950/40 text-emerald-300';
+  elements.authAlert.innerText = msg;
+  elements.authAlert.classList.remove('hidden');
+}
+
+function clearAuthAlert() {
+  if (!elements.authAlert) return;
+  elements.authAlert.classList.add('hidden');
+  elements.authAlert.innerText = '';
+}
+
+async function handleSigninSubmit(e) {
+  e.preventDefault();
+  const identifier = elements.signinIdentifier.value.trim();
+  const password = elements.signinPassword.value;
+  if (!identifier || !password) {
+    showAuthAlert('Please fill in both identifier and password.');
+    return;
+  }
+
+  elements.btnSubmitSignin.disabled = true;
+  elements.btnSubmitSignin.innerText = 'Signing In...';
+
+  try {
+    const res = await fetch('/api/auth/signin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier, password }),
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      throw new Error(data.error || 'Failed to sign in');
+    }
+
+    state.currentUser = data.user;
+    updateAuthUI();
+    closeAuthModal();
+    elements.signinPassword.value = '';
+    await loadPaperLibrary();
+  } catch (err) {
+    showAuthAlert(err.message);
+  } finally {
+    elements.btnSubmitSignin.disabled = false;
+    elements.btnSubmitSignin.innerText = 'Sign In';
+  }
+}
+
+async function handleSignupSubmit(e) {
+  e.preventDefault();
+  const username = elements.signupUsername.value.trim();
+  const email = elements.signupEmail.value.trim();
+  const password = elements.signupPassword.value;
+  const confirmPassword = elements.signupConfirmPassword.value;
+
+  if (password !== confirmPassword) {
+    showAuthAlert('Passwords do not match. Please verify.');
+    return;
+  }
+
+  elements.btnSubmitSignup.disabled = true;
+  elements.btnSubmitSignup.innerText = 'Creating Account...';
+
+  try {
+    const res = await fetch('/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      throw new Error(data.error || 'Failed to create account');
+    }
+
+    state.currentUser = data.user;
+    updateAuthUI();
+    closeAuthModal();
+    elements.signupPassword.value = '';
+    elements.signupConfirmPassword.value = '';
+    await loadPaperLibrary();
+  } catch (err) {
+    showAuthAlert(err.message);
+  } finally {
+    elements.btnSubmitSignup.disabled = false;
+    elements.btnSubmitSignup.innerText = 'Create Account';
+  }
+}
+
+async function handleSignout() {
+  try {
+    await fetch('/api/auth/signout', { method: 'POST' });
+    state.currentUser = null;
+    updateAuthUI();
+    showIngestionView();
+    await loadPaperLibrary();
+  } catch (err) {
+    console.error('Failed to sign out:', err);
+  }
+}
+
 
 // Config & API Key Check
 async function checkConfig() {
