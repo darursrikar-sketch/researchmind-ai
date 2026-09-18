@@ -1,0 +1,22 @@
+# Local data and uploads
+data/
+*.db
+
+# Local environment variables
+.env
+.env.local
+
+# Test suite
+tests/
+
+# Documentation generator and heavy binaries
+ResearchMind_Project_Documentation.pdf
+ResearchMind_Project_Documentation.docx
+build_documents.py
+create_shortcut.ps1
+start_web.bat
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
