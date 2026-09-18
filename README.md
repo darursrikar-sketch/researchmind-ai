@@ -2,7 +2,9 @@
 
 **ResearchMind AI** is an autonomous, multi-modal AI agent built for comprehensive academic and scientific paper analysis, critical peer review, grounded Q&A, and comparative cross-paper synthesis.
 
-Powered by Google Gemini (`gemini-3.7-flash` and `gemini-2.5-pro` via the official `google-genai` SDK), it provides deep academic rigor with exact page citations and LaTeX formula rendering.
+Powered by Google Gemini (`gemini-3.5-flash` and `gemini-2.5-pro` via the official `google-genai` SDK), it provides deep academic rigor with exact page citations and LaTeX formula rendering.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fdarursrikar-sketch%2Fresearchmind-ai&env=GEMINI_API_KEY,GEMINI_MODEL,FLASK_SECRET_KEY&project-name=researchmind-ai)
 
 ---
 
